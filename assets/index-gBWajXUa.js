@@ -12470,8 +12470,6 @@ const useCardNumbers = () => {
     return { isError: false, errorMessage: "" };
   };
   const handleCardNumbersChange = (target) => (event) => {
-    console.log("target", target);
-    console.log("event", event.target.value.trim());
     const { isError, errorMessage } = getCardNumbersValidationResult(
       event.target.value.trim()
     );
@@ -12480,10 +12478,10 @@ const useCardNumbers = () => {
       return;
     }
     clearError(target);
-    setCardNumbers({
-      ...cardNumbers,
+    setCardNumbers((prev) => ({
+      ...prev,
       [target]: event.target.value.trim()
-    });
+    }));
   };
   const handleCardNumbersBlur = (target) => {
     clearError(target);
