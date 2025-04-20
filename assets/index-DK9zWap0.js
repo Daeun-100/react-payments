@@ -12080,6 +12080,83 @@ function requireClient() {
 }
 var clientExports = requireClient();
 const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(clientExports);
+const useError = (initiallError) => {
+  const [isError, setIsError] = reactExports.useState(initiallError);
+  const [errorMessage, setErrorMessage] = reactExports.useState("");
+  const clearError = (target) => {
+    setIsError((prev) => ({ ...prev, [target]: false }));
+    setErrorMessage("");
+  };
+  const setErrorField = (target, message) => {
+    setIsError((prev) => ({ ...prev, [target]: true }));
+    setErrorMessage(message);
+  };
+  const error2 = {
+    isError,
+    errorMessage
+  };
+  return { error: error2, setErrorField, clearError };
+};
+const isNumber = (value) => {
+  if (value === null || value === void 0) return false;
+  return !isNaN(Number(value));
+};
+const isValidStringLength = ({
+  value,
+  minLength = 0,
+  maxLength
+}) => {
+  if (value.length > maxLength) return false;
+  if (value.length < minLength) return false;
+  return true;
+};
+const COMMON_ERROR_MESSAGE = {
+  ONLY_NUMBER: "숫자만 입력 가능합니다",
+  ONLY_NUMBER_WITH_LENGTH: (length) => `${length}자리 숫자만 입력 가능합니다`,
+  ONLY_NUMBER_WITH_LENGTH_MIN_MAX: (min, max) => `${min}자리 ~ ${max}자리 숫자만 입력 가능합니다`,
+  ONLY_NUMBER_WITH_RANGE: (min, max) => `${min} ~ ${max} 사이의 숫자만 입력 가능합니다`
+};
+const INITIAL_IS_ERROR$2 = {
+  cvcNumber: false
+};
+const MAX_CVC_LENGTH = 3;
+const useCardCVCNumber = () => {
+  const [cardCVCNumber, setCardCVCNumber] = reactExports.useState("");
+  const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR$2);
+  const getCardCVCNumberChangeValidationResult = (input2) => {
+    if (!isNumber(input2)) {
+      return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
+    }
+    if (!isValidStringLength({ value: input2, maxLength: MAX_CVC_LENGTH })) {
+      return {
+        isError: true,
+        errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER_WITH_LENGTH(MAX_CVC_LENGTH)
+      };
+    }
+    return { isError: false, errorMessage: "" };
+  };
+  const handleCardCVCNumberChange = (event) => {
+    const { isError, errorMessage } = getCardCVCNumberChangeValidationResult(
+      event.target.value.trim()
+    );
+    if (isError) {
+      setErrorField("cvcNumber", errorMessage);
+      return;
+    }
+    clearError("cvcNumber");
+    setCardCVCNumber(event.target.value.trim());
+  };
+  const handleCardCVCBlur = () => {
+    clearError("cvcNumber");
+  };
+  return {
+    cardCVCNumber,
+    setCardCVCNumber: handleCardCVCNumberChange,
+    handleCardCVCBlur,
+    isError: error2.isError,
+    errorMessage: error2.errorMessage
+  };
+};
 const error$1 = "_error_2ik6c_1";
 const styles$4 = {
   error: error$1
@@ -12099,13 +12176,15 @@ const InputField = ({
   value,
   onChange,
   isError = false,
-  placeholder
+  placeholder,
+  onBlur
 }) => {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
     "input",
     {
       value,
       onChange,
+      onBlur,
       className: `${styles$3.input} ${isError ? styles$3.error : styles$3.basic}`,
       placeholder
     }
@@ -12140,65 +12219,90 @@ const InputSection = ({
     ] })
   ] });
 };
-const CardNumbersInputSection = ({
-  cardNumbers,
-  setCardNumbers,
-  isError,
-  errorMessage
-}) => {
+const CARD_CVC_NUMBER_TEXT = {
+  title: "카드 CVC 번호를 입력해 주세요",
+  description: "카드 뒷면에 있는 3자리 숫자입니다",
+  subtitle: "CVC"
+};
+const CardCVCNumberInputSection = () => {
+  const {
+    cardCVCNumber,
+    setCardCVCNumber,
+    handleCardCVCBlur,
+    isError,
+    errorMessage
+  } = useCardCVCNumber();
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
       InputSection,
       {
-        title: "결제할 카드번호를 입력해 주세요",
-        description: "본인 명의의 카드만 결제 가능합니다",
-        subtitle: "카드번호",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            InputField,
-            {
-              value: cardNumbers.firstNumber,
-              onChange: setCardNumbers("firstNumber"),
-              isError: isError.firstNumber,
-              placeholder: "1234"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            InputField,
-            {
-              value: cardNumbers.secondNumber,
-              onChange: setCardNumbers("secondNumber"),
-              isError: isError.secondNumber,
-              placeholder: "1234"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            InputField,
-            {
-              value: cardNumbers.thirdNumber,
-              onChange: setCardNumbers("thirdNumber"),
-              isError: isError.thirdNumber,
-              placeholder: "1234"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            InputField,
-            {
-              value: cardNumbers.fourthNumber,
-              onChange: setCardNumbers("fourthNumber"),
-              isError: isError.fourthNumber,
-              placeholder: "1234"
-            }
-          )
-        ]
+        title: CARD_CVC_NUMBER_TEXT.title,
+        description: CARD_CVC_NUMBER_TEXT.description,
+        subtitle: CARD_CVC_NUMBER_TEXT.subtitle,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          InputField,
+          {
+            value: cardCVCNumber,
+            onChange: setCardCVCNumber,
+            isError: isError.cvcNumber,
+            placeholder: "123",
+            onBlur: handleCardCVCBlur
+          }
+        )
       }
     ),
     /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorMessage, { message: errorMessage })
   ] });
 };
+const CARD_NUMBERS_TEXT = {
+  title: "카드번호를 입력해 주세요",
+  description: "본인 명의의 카드만 결제 가능합니다",
+  subtitle: "카드번호"
+};
+const CardNumbersInputSection = ({
+  cardNumbers,
+  setCardNumbers,
+  handleCardNumbersBlur,
+  isError,
+  errorMessage
+}) => {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      InputSection,
+      {
+        title: CARD_NUMBERS_TEXT.title,
+        description: CARD_NUMBERS_TEXT.description,
+        subtitle: CARD_NUMBERS_TEXT.subtitle,
+        children: [
+          "firstNumber",
+          "secondNumber",
+          "thirdNumber",
+          "fourthNumber"
+        ].map((key) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+          InputField,
+          {
+            value: cardNumbers[key],
+            onChange: setCardNumbers(key),
+            onBlur: () => handleCardNumbersBlur(key),
+            isError: isError[key],
+            placeholder: "1234"
+          },
+          key
+        ))
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorMessage, { message: errorMessage })
+  ] });
+};
+const CARD_EXPIRATION_DATE_TEXT = {
+  title: "카드 유효기간을 입력해 주세요",
+  description: "월/년도(MM/YY) 순서대로 입력해 주세요",
+  subtitle: "유효기간"
+};
 const CardExpirationDateInputSection = ({
   cardExpirationDate,
   setCardExpirationDate,
+  handleCardExpirationDateBlur,
   isError,
   errorMessage
 }) => {
@@ -12206,9 +12310,9 @@ const CardExpirationDateInputSection = ({
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       InputSection,
       {
-        title: "카드 유효기간을 입력해 주세요",
-        description: "월/년도(MM/YY) 순서대로 입력해 주세요",
-        subtitle: "유효기간",
+        title: CARD_EXPIRATION_DATE_TEXT.title,
+        description: CARD_EXPIRATION_DATE_TEXT.description,
+        subtitle: CARD_EXPIRATION_DATE_TEXT.subtitle,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             InputField,
@@ -12216,7 +12320,8 @@ const CardExpirationDateInputSection = ({
               value: cardExpirationDate.month,
               onChange: setCardExpirationDate("month"),
               isError: isError.month,
-              placeholder: "MM"
+              placeholder: "MM",
+              onBlur: () => handleCardExpirationDateBlur("month")
             }
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -12225,7 +12330,8 @@ const CardExpirationDateInputSection = ({
               value: cardExpirationDate.year,
               onChange: setCardExpirationDate("year"),
               isError: isError.year,
-              placeholder: "YY"
+              placeholder: "YY",
+              onBlur: () => handleCardExpirationDateBlur("year")
             }
           )
         ]
@@ -12233,98 +12339,6 @@ const CardExpirationDateInputSection = ({
     ),
     /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorMessage, { message: errorMessage })
   ] });
-};
-const useError = (initiallError) => {
-  const [isError, setIsError] = reactExports.useState(initiallError);
-  const [errorMessage, setErrorMessage] = reactExports.useState("");
-  const clearError = (target) => {
-    setIsError((prev) => ({ ...prev, [target]: false }));
-    setErrorMessage("");
-  };
-  const setErrorField = (target, message) => {
-    setIsError((prev) => ({ ...prev, [target]: true }));
-    setErrorMessage(message);
-  };
-  const error2 = {
-    isError,
-    errorMessage
-  };
-  return { error: error2, setErrorField, clearError };
-};
-const isNumber = (value) => {
-  if (value === null || value === void 0) return false;
-  return !isNaN(Number(value));
-};
-const isValidStringLength = ({
-  value,
-  minLength = 0,
-  maxLength
-}) => {
-  if (value.length > maxLength) return false;
-  if (value.length < minLength) return false;
-  return true;
-};
-const INITIAL_IS_ERROR$2 = {
-  cvcNumber: false
-};
-const useCardCVCNumber = () => {
-  const [cardCVCNumber, setCardCVCNumber] = reactExports.useState("");
-  const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR$2);
-  const getCardCVCNumberChangeValidationResult = (input2) => {
-    if (!isNumber(input2)) {
-      return { isError: true, errorMessage: "숫자만 입력 가능합니다" };
-    }
-    if (isValidStringLength({ value: input2, maxLength: 3 })) {
-      return { isError: true, errorMessage: "3자리를 입려해야 합니다" };
-    }
-    return { isError: false, errorMessage: "" };
-  };
-  const handleCardCVCNumberChange = (event) => {
-    const { isError, errorMessage } = getCardCVCNumberChangeValidationResult(
-      event.target.value.trim()
-    );
-    if (isError) {
-      setErrorField("cvcNumber", errorMessage);
-      return;
-    }
-    clearError("cvcNumber");
-    setCardCVCNumber(event.target.value.trim());
-  };
-  return {
-    cardCVCNumber,
-    setCardCVCNumber: handleCardCVCNumberChange,
-    isError: error2.isError,
-    errorMessage: error2.errorMessage
-  };
-};
-const CardCVCNumberInputSection = () => {
-  const { cardCVCNumber, setCardCVCNumber, isError, errorMessage } = useCardCVCNumber();
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      InputSection,
-      {
-        title: "CVC 번호를 입력해주세요",
-        description: "",
-        subtitle: "CVC",
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          InputField,
-          {
-            value: cardCVCNumber,
-            onChange: setCardCVCNumber,
-            isError: isError.cvcNumber,
-            placeholder: "123"
-          }
-        )
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorMessage, { message: errorMessage })
-  ] });
-};
-const cardForm = "_cardForm_1do51_1";
-const main = "_main_1do51_11";
-const styles$1 = {
-  cardForm,
-  main
 };
 const card = "_card_vucoj_1";
 const basic = "_basic_vucoj_17";
@@ -12334,7 +12348,7 @@ const chip = "_chip_vucoj_43";
 const cardNetwork = "_cardNetwork_vucoj_57";
 const cardHeader = "_cardHeader_vucoj_69";
 const cardNumberDisplay = "_cardNumberDisplay_vucoj_79";
-const styles = {
+const styles$1 = {
   card,
   basic,
   cardBody,
@@ -12344,42 +12358,15 @@ const styles = {
   cardHeader,
   cardNumberDisplay
 };
-const masterCard = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFMAAAA5CAYAAABK3Rc8AAAFiUlEQVR4Ae2cT08bRxTA387aa2xcYqAoqdQEQyOQI7W4h5wqtfTUEzH5AFUdqcdWECk9VjRSPwBReqwETq6tIL1VrYQTKZeoEqSVakFTYWgPjQzBqA7g9f7pexvWwsJge+cZ2mZ/0sLuerVCP968mZ03XgUOsLq6GjMMY8KyrHE8TILPUSwJIebRVSaRSOTdk4q7s7y8TAJnIpFIrLOzE0KhEASDQfCppVKpAEqEjY0N+p3HU9eHh4fn6TNH5r7Iub6+Puju7gaf5tjc3HQ25CoJVXK5XBxDdqG3tzeOG/i0xtbWFhQKhaKmaQPoUaSxOfsiPUItORwOx3RdnxSKoqR8kXJEo1H6lRK2bScDgQD4eIc6ayQp6Ce2d/DxjjvqEeDDhi+TEV8mI6fW81j5teq+iPcDB3YpX91XonE4aU5Epl0sgrn0M5Qzd6CSfVAj0kVNvoVS46CNj4GWugJKLHb8PfUi2M+WwPo9A/Zf2RqRLkpP0pEqzo+DciEFinb8PWVR8FHSHhwchHYMj0ji3q3bsDf9lbPfClr6Q4hMfX4oakmilbsF1q/Tzn4riItpUEem2KOWntdxkqh9MvX572Dn+o26UdgsFJ0dk59AGKUS1vo8mA+vtSyxBoxO9dKkI5WLtsokiXvTt4GL4PgViHz2Opi/TQMX4sI4qO/MsDR9VyZ72y5d+xj02bvAiVaYA5ExwXwbD8LAAkU55dzA2CJbLmUdGlFEcouMXDYh9IYJyh5G6C94ogJsUKdlfP++XNo4AJvMFx0NX9MmOhIWbmb1WClhr58HVpwRweObwAGLTOpkdiZvACciSlFpHDqv/oGfbQErJo4MLBxeycIic+fml8BNeMQ88jM1B+zQKEEWaZkUlfrsHeCEopLy5FFQ/hQFYIXyJ3VKMkjLPOmodBF/Ajv0MCCDtEwjex+4CZ61Gl7j5E3Gnp2gvCnTs0vJNJceSz3h1EPtsbGZ201dKzaAHXv9HnhFTuYar0hC7Wz+WhoqcWPhUMkr0pHJjdrTuIm7UEfETp3Zp2aRkmkXt4EbpZVylAH8nFbObHVarRkUrbl8+W9ESibXDPlBbF2B/ypSMhvNhnvBKrUgswP4kZg4lpIZGBkBboyt5mXaUWCHSh1ekZJJdRtuzGenLdN7gEg388Dou8CJrWN0Pm38Z9k4SWxxr36k4tu5UfCK9ONkx8SnwM1uTm14jd2GQqM4OwoySMvUsD7D3atX1hWwGvTq5gCwoyblimws85lu9ZCTnZ+Ojk7zPEYmc08uEhPSJWAWmSGscXPnTv2JqJs7nVzJHZUoUU1+AbKw1YCiM1+zN/fSQxWs57XN3XgThTLXVIMfLLBUKNlkkshX5r5hHcjTAP7vhUA1fxoJ/uGQUztnWuHBWuqlceeZxUesEUrjzuePXgXzchys14APWtmBItWLaeCCfUkhiexa+IEth9L9It/+CCK9IPV0UgNGIjVtTpFEW9ZnukI7JfIopQsaJVCkU8RTUwyOLUIAo8nz8zNF48iUcx+2f8wB2roKzqU8e9dZTmhkHzS8lsRpqZSzYOu4/Gs9mcUtA9bTbKNbOoNx5dx7IC5NtmVZYdtXwdXDXadpUO0ISx50TMKU2BkQ/Rh5mBpajWR3nSbQyozS2ovJXRRG0pRoP0ocbfvC11OR+X/FlemvaWfEl8mIL5MRXyYjJLOo6zr4eIc6IIK+1btULpfBxzvkDz1m6Vu990ulNqwzeYmgL/CbppkRmqZN7+7u5vdfj+DTIuRt/10dWTEwMFDEEL2KJ4u+0NYoFAok0/FHb5GpzryurKwkscnP0Ssmurq66FUJ4HMYy7KcHLm9ve1EJIkcGhpyls4dqlrlcrm0qqofodg4+NQFBeZR6r1QKDRLLds9/w8eIDcphYGoTAAAAABJRU5ErkJggg==";
-const visa = "data:image/png;base64,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";
-const CardNetwork = ({ cardNumbers }) => {
-  const getCardNetworkState = (number) => {
-    if (number === "4") {
-      return "visa";
-    }
-    if (number === "5") {
-      return "master";
-    }
-  };
-  const cardNetworkState = getCardNetworkState(
-    String(cardNumbers.firstNumber)[0]
-  );
-  if (cardNetworkState === "master") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: masterCard, alt: "mastercard", className: styles.cardNetwork });
-  }
-  if (cardNetworkState === "visa") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: visa, alt: "visa", className: styles.cardNetwork });
-  }
-};
-const CardHeader = ({ cardNumbers }) => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.cardHeader, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.chip }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(CardNetwork, { cardNumbers })
-  ] });
-};
 const CardNumberDisplay = ({
   cardNumber: cardNumber2,
   isMasked = false
 }) => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.cardNumberDisplay, children: isMasked ? cardNumber2 = "*".repeat(String(cardNumber2).length) : cardNumber2 });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$1.cardNumberDisplay, children: isMasked ? cardNumber2 = "*".repeat(String(cardNumber2).length) : cardNumber2 });
 };
 const CardBody = ({ cardNumbers, cardExpirationDate }) => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.cardBody, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.cardNumber, children: Object.values(cardNumbers).map((cardNumber2, index) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.cardBody, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.cardNumber, children: Object.values(cardNumbers).map((cardNumber2, index) => /* @__PURE__ */ jsxRuntimeExports.jsx(
       CardNumberDisplay,
       {
         cardNumber: String(cardNumber2),
@@ -12390,8 +12377,45 @@ const CardBody = ({ cardNumbers, cardExpirationDate }) => {
     cardExpirationDate.month && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: `${cardExpirationDate.month}/${cardExpirationDate.year}` })
   ] });
 };
+const Visa = "data:image/png;base64,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";
+const MasterCard = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFMAAAA5CAYAAABK3Rc8AAAFiUlEQVR4Ae2cT08bRxTA387aa2xcYqAoqdQEQyOQI7W4h5wqtfTUEzH5AFUdqcdWECk9VjRSPwBReqwETq6tIL1VrYQTKZeoEqSVakFTYWgPjQzBqA7g9f7pexvWwsJge+cZ2mZ/0sLuerVCP968mZ03XgUOsLq6GjMMY8KyrHE8TILPUSwJIebRVSaRSOTdk4q7s7y8TAJnIpFIrLOzE0KhEASDQfCppVKpAEqEjY0N+p3HU9eHh4fn6TNH5r7Iub6+Puju7gaf5tjc3HQ25CoJVXK5XBxDdqG3tzeOG/i0xtbWFhQKhaKmaQPoUaSxOfsiPUItORwOx3RdnxSKoqR8kXJEo1H6lRK2bScDgQD4eIc6ayQp6Ce2d/DxjjvqEeDDhi+TEV8mI6fW81j5teq+iPcDB3YpX91XonE4aU5Epl0sgrn0M5Qzd6CSfVAj0kVNvoVS46CNj4GWugJKLHb8PfUi2M+WwPo9A/Zf2RqRLkpP0pEqzo+DciEFinb8PWVR8FHSHhwchHYMj0ji3q3bsDf9lbPfClr6Q4hMfX4oakmilbsF1q/Tzn4riItpUEem2KOWntdxkqh9MvX572Dn+o26UdgsFJ0dk59AGKUS1vo8mA+vtSyxBoxO9dKkI5WLtsokiXvTt4GL4PgViHz2Opi/TQMX4sI4qO/MsDR9VyZ72y5d+xj02bvAiVaYA5ExwXwbD8LAAkU55dzA2CJbLmUdGlFEcouMXDYh9IYJyh5G6C94ogJsUKdlfP++XNo4AJvMFx0NX9MmOhIWbmb1WClhr58HVpwRweObwAGLTOpkdiZvACciSlFpHDqv/oGfbQErJo4MLBxeycIic+fml8BNeMQ88jM1B+zQKEEWaZkUlfrsHeCEopLy5FFQ/hQFYIXyJ3VKMkjLPOmodBF/Ajv0MCCDtEwjex+4CZ61Gl7j5E3Gnp2gvCnTs0vJNJceSz3h1EPtsbGZ201dKzaAHXv9HnhFTuYar0hC7Wz+WhoqcWPhUMkr0pHJjdrTuIm7UEfETp3Zp2aRkmkXt4EbpZVylAH8nFbObHVarRkUrbl8+W9ESibXDPlBbF2B/ypSMhvNhnvBKrUgswP4kZg4lpIZGBkBboyt5mXaUWCHSh1ekZJJdRtuzGenLdN7gEg388Dou8CJrWN0Pm38Z9k4SWxxr36k4tu5UfCK9ONkx8SnwM1uTm14jd2GQqM4OwoySMvUsD7D3atX1hWwGvTq5gCwoyblimws85lu9ZCTnZ+Ojk7zPEYmc08uEhPSJWAWmSGscXPnTv2JqJs7nVzJHZUoUU1+AbKw1YCiM1+zN/fSQxWs57XN3XgThTLXVIMfLLBUKNlkkshX5r5hHcjTAP7vhUA1fxoJ/uGQUztnWuHBWuqlceeZxUesEUrjzuePXgXzchys14APWtmBItWLaeCCfUkhiexa+IEth9L9It/+CCK9IPV0UgNGIjVtTpFEW9ZnukI7JfIopQsaJVCkU8RTUwyOLUIAo8nz8zNF48iUcx+2f8wB2roKzqU8e9dZTmhkHzS8lsRpqZSzYOu4/Gs9mcUtA9bTbKNbOoNx5dx7IC5NtmVZYdtXwdXDXadpUO0ISx50TMKU2BkQ/Rh5mBpajWR3nSbQyozS2ovJXRRG0pRoP0ocbfvC11OR+X/FlemvaWfEl8mIL5MRXyYjJLOo6zr4eIc6IIK+1btULpfBxzvkDz1m6Vu990ulNqwzeYmgL/CbppkRmqZN7+7u5vdfj+DTIuRt/10dWTEwMFDEEL2KJ4u+0NYoFAok0/FHb5GpzryurKwkscnP0Ssmurq66FUJ4HMYy7KcHLm9ve1EJIkcGhpyls4dqlrlcrm0qqofodg4+NQFBeZR6r1QKDRLLds9/w8eIDcphYGoTAAAAABJRU5ErkJggg==";
+const CARD_NETWORKS = [
+  {
+    prefixes: ["40", "41", "42", "43", "44", "45", "46", "47", "48", "49"],
+    name: "visa",
+    image: Visa
+  },
+  {
+    prefixes: ["51", "52", "53", "54", "55"],
+    name: "master",
+    image: MasterCard
+  }
+];
+const CardNetwork = ({ cardNumbers }) => {
+  const cardNumberPrefix = String(cardNumbers.firstNumber).slice(0, 2);
+  const cardNetwork2 = CARD_NETWORKS.find(
+    (network) => network.prefixes.includes(cardNumberPrefix)
+  );
+  if (!cardNetwork2) {
+    return null;
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "img",
+    {
+      src: cardNetwork2.image,
+      alt: cardNetwork2.name,
+      className: styles$1.cardNetwork
+    }
+  );
+};
+const CardHeader = ({ cardNumbers }) => {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.cardHeader, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.chip }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(CardNetwork, { cardNumbers })
+  ] });
+};
 const CardDisplay = ({ cardNumbers, cardExpirationDate }) => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles.card} ${styles.basic}`, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.card} ${styles$1.basic}`, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(CardHeader, { cardNumbers }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       CardBody,
@@ -12401,6 +12425,12 @@ const CardDisplay = ({ cardNumbers, cardExpirationDate }) => {
       }
     )
   ] });
+};
+const cardForm = "_cardForm_1do51_1";
+const main = "_main_1do51_11";
+const styles = {
+  cardForm,
+  main
 };
 const INITIAL_CARD_NUMBER = {
   firstNumber: "",
@@ -12414,19 +12444,25 @@ const INITIAL_IS_ERROR$1 = {
   thirdNumber: false,
   fourthNumber: false
 };
+const MAX_INPUT_LENGTH$1 = 4;
 const useCardNumbers = () => {
   const [cardNumbers, setCardNumbers] = reactExports.useState(INITIAL_CARD_NUMBER);
   const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR$1);
   const getCardNumbersValidationResult = (input2) => {
     if (!isNumber(input2)) {
-      return { isError: true, errorMessage: "숫자만 입력 가능합니다" };
+      return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
-    if (!isValidStringLength({ value: input2, maxLength: 4 })) {
-      return { isError: true, errorMessage: "4자리 숫자만 입력 가능합니다" };
+    if (!isValidStringLength({ value: input2, maxLength: MAX_INPUT_LENGTH$1 })) {
+      return {
+        isError: true,
+        errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER_WITH_LENGTH(MAX_INPUT_LENGTH$1)
+      };
     }
     return { isError: false, errorMessage: "" };
   };
   const handleCardNumbersChange = (target) => (event) => {
+    console.log("target", target);
+    console.log("event", event.target.value.trim());
     const { isError, errorMessage } = getCardNumbersValidationResult(
       event.target.value.trim()
     );
@@ -12440,9 +12476,13 @@ const useCardNumbers = () => {
       [target]: event.target.value.trim()
     });
   };
+  const handleCardNumbersBlur = (target) => {
+    clearError(target);
+  };
   return {
     cardNumbers,
     setCardNumbers: handleCardNumbersChange,
+    handleCardNumbersBlur,
     isError: error2.isError,
     errorMessage: error2.errorMessage
   };
@@ -12464,6 +12504,15 @@ const INITIAL_IS_ERROR = {
   month: false,
   year: false
 };
+const MAX_INPUT_LENGTH = 2;
+const MIN_YEAR = 0;
+const MAX_YEAR = 99;
+const MIN_MONTH = 1;
+const MAX_MONTH = 12;
+const ERROR_MESSAGE = {
+  //유효기간이 지났습니다
+  EXPIRED: "유효기간이 지났습니다"
+};
 const useCardExpirationDate = () => {
   const [cardExpirationDate, setCardExpirationDate] = reactExports.useState(
     INITIAL_CARD_EXPIRATION_DATE
@@ -12471,40 +12520,58 @@ const useCardExpirationDate = () => {
   const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR);
   const getCardExpirationDateValidationResult = (target, input2) => {
     if (input2.length === 1 && !isNumber(input2))
-      return { isError: true, errorMessage: "숫자만 입력 가능합니다" };
-    if (input2.length < 2) return { isError: false, errorMessage: "" };
+      return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
+    if (input2.length < MAX_INPUT_LENGTH)
+      return { isError: false, errorMessage: "" };
     if (!isNumber(input2)) {
-      return { isError: true, errorMessage: "숫자만 입력 가능합니다" };
+      return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
-    if (!isValidStringLength({ value: input2, maxLength: 2 })) {
-      return { isError: true, errorMessage: "2자리 숫자만 입력 가능합니다" };
+    if (!isValidStringLength({ value: input2, maxLength: MAX_INPUT_LENGTH })) {
+      return {
+        isError: true,
+        errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER_WITH_LENGTH(MAX_INPUT_LENGTH)
+      };
     }
     if (target === "month") {
-      if (!isValidNumberRange({ value: Number(input2), min: 1, max: 12 })) {
+      if (!isValidNumberRange({
+        value: Number(input2),
+        min: MIN_MONTH,
+        max: MAX_MONTH
+      })) {
         return {
           isError: true,
-          errorMessage: "01 ~ 12 사이의 숫자만 입력 가능합니다"
+          errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER_WITH_LENGTH_MIN_MAX(
+            MIN_MONTH,
+            MAX_MONTH
+          )
         };
       }
       if (Number(cardExpirationDate.year) === (/* @__PURE__ */ new Date()).getFullYear() % 100) {
         if (Number(input2) < Math.floor((/* @__PURE__ */ new Date()).getMonth() + 1)) {
-          return { isError: true, errorMessage: "유효기간이 지났습니다" };
+          return { isError: true, errorMessage: ERROR_MESSAGE.EXPIRED };
         }
       }
     }
     if (target === "year") {
-      if (!isValidNumberRange({ value: Number(input2), min: 0, max: 99 })) {
+      if (!isValidNumberRange({
+        value: Number(input2),
+        min: MIN_YEAR,
+        max: MAX_YEAR
+      })) {
         return {
           isError: true,
-          errorMessage: "00 ~ 99 사이의 숫자만 입력 가능합니다"
+          errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER_WITH_RANGE(
+            MIN_YEAR,
+            MAX_YEAR
+          )
         };
       }
       if (Number(input2) < Math.floor((/* @__PURE__ */ new Date()).getFullYear() % 100)) {
-        return { isError: true, errorMessage: "유효기간이 지났습니다" };
+        return { isError: true, errorMessage: ERROR_MESSAGE.EXPIRED };
       }
       if (Number(input2) === Math.floor((/* @__PURE__ */ new Date()).getFullYear() % 100)) {
         if (cardExpirationDate.month !== "" && Number(cardExpirationDate.month) < (/* @__PURE__ */ new Date()).getMonth() + 1) {
-          return { isError: true, errorMessage: "유효기간이 지났습니다" };
+          return { isError: true, errorMessage: ERROR_MESSAGE.EXPIRED };
         }
       }
     }
@@ -12525,9 +12592,13 @@ const useCardExpirationDate = () => {
       [target]: event.target.value.trim()
     });
   };
+  const handleCardExpirationDateBlur = (target) => {
+    clearError(target);
+  };
   return {
     cardExpirationDate,
     setCardExpirationDate: handleCardExpirationDateChange,
+    handleCardExpirationDateBlur,
     isError: error2.isError,
     errorMessage: error2.errorMessage
   };
@@ -12537,15 +12608,17 @@ function App() {
     cardNumbers,
     setCardNumbers,
     isError: isCardNumbersError,
-    errorMessage: cardNumbersErrorMessage
+    errorMessage: cardNumbersErrorMessage,
+    handleCardNumbersBlur
   } = useCardNumbers();
   const {
     cardExpirationDate,
     setCardExpirationDate,
     isError: isCardExpirationDateError,
-    errorMessage: cardExpirationDateErrorMessage
+    errorMessage: cardExpirationDateErrorMessage,
+    handleCardExpirationDateBlur
   } = useCardExpirationDate();
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.main, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.main, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       CardDisplay,
       {
@@ -12553,12 +12626,13 @@ function App() {
         cardExpirationDate
       }
     ),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.cardForm, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.cardForm, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         CardNumbersInputSection,
         {
           cardNumbers,
           setCardNumbers,
+          handleCardNumbersBlur,
           isError: isCardNumbersError,
           errorMessage: cardNumbersErrorMessage
         }
@@ -12568,6 +12642,7 @@ function App() {
         {
           cardExpirationDate,
           setCardExpirationDate,
+          handleCardExpirationDateBlur,
           isError: isCardExpirationDateError,
           errorMessage: cardExpirationDateErrorMessage
         }

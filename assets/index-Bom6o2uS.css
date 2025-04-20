@@ -49,19 +49,6 @@
   display: flex;
   gap: 0.5rem;
 }
-._cardForm_1do51_1 {
-  width: 24rem;
-  margin: 0px auto;
-}
-
-._main_1do51_11 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background-color: #fff;
-}
 ._card_vucoj_1 {
   width: 212px;
   height: 132px;
@@ -105,4 +92,17 @@
   width: 44px;
   height: 18px;
   margin: 8px 0 8px 0;
+}
+._cardForm_1do51_1 {
+  width: 24rem;
+  margin: 0px auto;
+}
+
+._main_1do51_11 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #fff;
 }
