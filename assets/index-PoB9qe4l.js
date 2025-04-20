@@ -12174,6 +12174,7 @@ const styles$3 = {
 };
 const InputField = ({
   value,
+  name,
   onChange,
   isError = false,
   placeholder,
@@ -12183,6 +12184,7 @@ const InputField = ({
     "input",
     {
       value,
+      name,
       onChange,
       onBlur,
       className: `${styles$3.input} ${isError ? styles$3.error : styles$3.basic}`,
@@ -12243,6 +12245,7 @@ const CardCVCNumberInputSection = () => {
           InputField,
           {
             value: cardCVCNumber,
+            name: "cvcNumber",
             onChange: setCardCVCNumber,
             isError: isError.cvcNumber,
             placeholder: "123",
@@ -12282,6 +12285,7 @@ const CardNumbersInputSection = ({
           InputField,
           {
             value: cardNumbers[key],
+            name: `card${key}`,
             onChange: setCardNumbers(key),
             onBlur: () => handleCardNumbersBlur(key),
             isError: isError[key],
@@ -12318,6 +12322,7 @@ const CardExpirationDateInputSection = ({
             InputField,
             {
               value: cardExpirationDate.month,
+              name: "expirationDateMonth",
               onChange: setCardExpirationDate("month"),
               isError: isError.month,
               placeholder: "MM",
@@ -12328,6 +12333,7 @@ const CardExpirationDateInputSection = ({
             InputField,
             {
               value: cardExpirationDate.year,
+              name: "expirationDateYear",
               onChange: setCardExpirationDate("year"),
               isError: isError.year,
               placeholder: "YY",
