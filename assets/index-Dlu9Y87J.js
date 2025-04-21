@@ -12116,6 +12116,7 @@ const COMMON_ERROR_MESSAGE = {
   ONLY_NUMBER_WITH_LENGTH_MIN_MAX: (min, max) => `${min}자리 ~ ${max}자리 숫자만 입력 가능합니다`,
   ONLY_NUMBER_WITH_RANGE: (min, max) => `${min} ~ ${max} 사이의 숫자만 입력 가능합니다`
 };
+const isInteger = (value) => /^[0-9]+$/.test(value);
 const INITIAL_IS_ERROR$2 = {
   cvcNumber: false
 };
@@ -12124,7 +12125,7 @@ const useCardCVCNumber = () => {
   const [cardCVCNumber, setCardCVCNumber] = reactExports.useState("");
   const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR$2);
   const getCardCVCNumberChangeValidationResult = (input2) => {
-    if (!isNumber(input2)) {
+    if (!isNumber(input2) || !isInteger(input2)) {
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
     if (!isValidStringLength({ value: input2, maxLength: MAX_CVC_LENGTH })) {
@@ -12178,7 +12179,8 @@ const InputField = ({
   onChange,
   isError = false,
   placeholder,
-  onBlur
+  onBlur,
+  ...rest
 }) => {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
     "input",
@@ -12188,7 +12190,8 @@ const InputField = ({
       onChange,
       onBlur,
       className: `${styles$3.input} ${isError ? styles$3.error : styles$3.basic}`,
-      placeholder
+      placeholder,
+      ...rest
     }
   );
 };
@@ -12458,7 +12461,7 @@ const useCardNumbers = () => {
   const [cardNumbers, setCardNumbers] = reactExports.useState(INITIAL_CARD_NUMBER);
   const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR$1);
   const getCardNumbersValidationResult = (input2) => {
-    if (!isNumber(input2)) {
+    if (!isNumber(input2) || !isInteger(input2)) {
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
     if (!isValidStringLength({ value: input2, maxLength: MAX_INPUT_LENGTH$1 })) {
@@ -12530,7 +12533,7 @@ const useCardExpirationDate = () => {
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     if (input2.length < MAX_INPUT_LENGTH)
       return { isError: false, errorMessage: "" };
-    if (!isNumber(input2)) {
+    if (!isNumber(input2) || !isInteger(input2)) {
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
     if (!isValidStringLength({ value: input2, maxLength: MAX_INPUT_LENGTH })) {
