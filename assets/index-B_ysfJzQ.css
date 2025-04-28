@@ -1,0 +1,208 @@
+._error_2ik6c_1 {
+  color: red;
+}
+._basic_1ors2_1 {
+  border: 1px solid #acacac;
+  &:focus {
+    outline: none;
+    border: 2px solid black;
+  }
+}
+
+._error_1ors2_17 {
+  border: 1px solid red;
+  &:focus {
+    outline: none;
+    border: 2px solid red;
+  }
+}
+
+._input_1ors2_33 {
+  height: 32px;
+  color: black;
+  font-size: 16px;
+  min-width: 0;
+  border-radius: 5px;
+  flex-grow: 1;
+
+  &::placeholder {
+    color: #acacac;
+  }
+}
+
+._select_1ors2_59 {
+  /* ///.input 포함 */
+  height: 38px;
+  color: black;
+  font-size: 16px;
+  min-width: 0;
+  border-radius: 5px;
+  flex-grow: 1;
+}
+
+._title_1xrsa_1 {
+  font-size: 1.3rem;
+}
+
+._description_1xrsa_9 {
+  font-size: 0.8rem;
+  color: #acacac;
+}
+
+._subtitle_1xrsa_19 {
+  font-size: 1rem;
+}
+
+._inputContainer_1xrsa_27 {
+  display: flex;
+  gap: 0.5rem;
+}
+._card_1nnvz_1 {
+  width: 212px;
+  height: 132px;
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+}
+
+._basic_1nnvz_17 {
+  background-color: #333333;
+  box-shadow: 3px 3px 5px 0px #00000040;
+}
+._cardBody_1nnvz_25 {
+  margin: 4px;
+}
+._cardNumber_1nnvz_31 {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+._chip_1nnvz_43 {
+  width: 36px;
+  height: 22px;
+  background-color: #ddcd78;
+  border-radius: 3px;
+}
+
+._cardNetwork_1nnvz_57 {
+  width: 36px;
+  height: 22px;
+  border-radius: 3px;
+}
+
+._cardHeader_1nnvz_69 {
+  display: flex;
+  justify-content: space-between;
+}
+
+._cardNumberDisplay_1nnvz_79 {
+  width: 44px;
+  height: 18px;
+  margin: 8px 0 8px 0;
+}
+
+._BC카드_1nnvz_91 {
+  background-color: #f04651;
+}
+
+._신한카드_1nnvz_99 {
+  background-color: #0033a0;
+}
+
+._카카오뱅크_1nnvz_107 {
+  background-color: #ffe600;
+}
+._현대카드_1nnvz_113 {
+  background-color: #000000;
+}
+._우리카드_1nnvz_119 {
+  background-color: #007bc8;
+}
+._롯데카드_1nnvz_125 {
+  background-color: #ed1c24;
+}
+._하나카드_1nnvz_131 {
+  background-color: #009490;
+}
+._국민카드_1nnvz_137 {
+  background-color: #6a6056;
+}
+._cardForm_1yhnk_1 {
+  width: 24rem;
+  margin: 0px auto;
+  padding-bottom: 40px;
+}
+._cardConfirm_13t4b_1 {
+  width: 100%;
+  height: 52px;
+  position: fixed;
+  bottom: 0;
+  width: 532px;
+}
+
+._finish_13t4b_17 {
+  width: 90%;
+  height: 44px;
+  border-radius: 8px;
+  margin: 0 auto;
+}
+
+._buttonContainer_13t4b_31 {
+  display: flex;
+  justify-content: center;
+
+  width: 100%;
+  margin: 0 auto;
+}
+._basic_1ybyi_1 {
+  background-color: #333333;
+  color: white;
+  border: none;
+}
+
+._registrationComplete_1ybyi_13 {
+  background-color: #333333;
+  color: white;
+  border: none;
+}
+._container_13oiw_1 {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+
+._text_13oiw_21 {
+  font-size: 25px;
+  font-weight: 700;
+  color: #000;
+  text-align: center;
+}
+
+._checkIcon_13oiw_35 {
+  width: 76px;
+  height: 76px;
+}
+._main_wvi7l_1 {
+  width: 500px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #fff;
+}
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#root {
+  height: 100%;
+}
