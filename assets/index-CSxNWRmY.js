@@ -14297,6 +14297,24 @@ new TextEncoder();
   ...NO_BODY_STATUS_CODES,
   304
 ]);
+const useRefFocus = (refArray) => {
+  const currentIndex = reactExports.useRef(0);
+  const focusFirst = () => {
+    var _a;
+    if (refArray.length === 0) return;
+    (_a = refArray[currentIndex.current].current) == null ? void 0 : _a.focus();
+  };
+  const focusNext = () => {
+    var _a;
+    if (currentIndex.current >= refArray.length - 1) return;
+    currentIndex.current += 1;
+    (_a = refArray[currentIndex.current].current) == null ? void 0 : _a.focus();
+  };
+  return {
+    focusFirst,
+    focusNext
+  };
+};
 const error$1 = "_error_2ik6c_1";
 const styles$6 = {
   error: error$1
@@ -14383,8 +14401,19 @@ const CardCVCNumberInputSection = ({
   isError,
   errorMessage,
   inputRef,
-  handleMouseDown
+  handleMouseDown,
+  goNextStep
 }) => {
+  const { focusFirst } = useRefFocus([inputRef]);
+  const handleCVCNumberInputChange = (e) => {
+    setCardCVCNumber(e);
+    if (e.target.value.length === 3) {
+      goNextStep({ time: "once", key: "cardCVCNumber" });
+    }
+  };
+  reactExports.useEffect(() => {
+    focusFirst();
+  }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       InputSection,
@@ -14397,7 +14426,7 @@ const CardCVCNumberInputSection = ({
           {
             value: cardCVCNumber,
             name: "cvcNumber",
-            onChange: setCardCVCNumber,
+            onChange: handleCVCNumberInputChange,
             isError: isError.cvcNumber,
             placeholder: "123",
             onBlur: handleCardCVCBlur,
@@ -14422,8 +14451,22 @@ const CardNumbersInputSection = ({
   isError,
   errorMessage,
   inputRef,
-  handleMouseDown
+  handleMouseDown,
+  goNextStep
 }) => {
+  const { focusFirst, focusNext } = useRefFocus(Object.values(inputRef));
+  const handleChangeInput = (key) => (e) => {
+    setCardNumbers(key)(e);
+    if (key === "fourthNumber" && e.target.value.length === 4) {
+      goNextStep({ time: "once", key: "cardNumbers" });
+    }
+    if (e.target.value.length === 4) {
+      focusNext();
+    }
+  };
+  reactExports.useEffect(() => {
+    focusFirst();
+  }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       InputSection,
@@ -14441,7 +14484,7 @@ const CardNumbersInputSection = ({
           {
             value: cardNumbers[key],
             name: `card${key}`,
-            onChange: setCardNumbers(key),
+            onChange: handleChangeInput(key),
             onBlur: () => handleCardNumbersBlur(key),
             isError: isError[key],
             placeholder: "1234",
@@ -14467,15 +14510,25 @@ const CardExpirationDateInputSection = ({
   isError,
   errorMessage,
   inputRef,
-  handleMouseDown
+  handleMouseDown,
+  goNextStep
 }) => {
-  reactExports.useEffect(() => {
-    var _a;
-    if (cardExpirationDate.month.length === 2) {
-      console.log("month", cardExpirationDate.month);
-      (_a = inputRef.year.current) == null ? void 0 : _a.focus();
+  const { focusFirst, focusNext } = useRefFocus(Object.values(inputRef));
+  const handleMonthInputChange = (e) => {
+    setCardExpirationDate("month")(e);
+    if (e.target.value.length === 2) {
+      focusNext();
     }
-  }, [cardExpirationDate.month]);
+  };
+  const handleYearInputChange = (e) => {
+    setCardExpirationDate("year")(e);
+    if (e.target.value.length === 2) {
+      goNextStep({ time: "once", key: "cardExpirationDate" });
+    }
+  };
+  reactExports.useEffect(() => {
+    focusFirst();
+  }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       InputSection,
@@ -14489,7 +14542,7 @@ const CardExpirationDateInputSection = ({
             {
               value: cardExpirationDate.month,
               name: "expirationDateMonth",
-              onChange: setCardExpirationDate("month"),
+              onChange: handleMonthInputChange,
               isError: isError.month,
               placeholder: "MM",
               onBlur: () => handleCardExpirationDateBlur("month"),
@@ -14502,7 +14555,7 @@ const CardExpirationDateInputSection = ({
             {
               value: cardExpirationDate.year,
               name: "expirationDateYear",
-              onChange: setCardExpirationDate("year"),
+              onChange: handleYearInputChange,
               isError: isError.year,
               placeholder: "YY",
               onBlur: () => handleCardExpirationDateBlur("year"),
@@ -14623,7 +14676,7 @@ const CardDisplay = ({
     }
   );
 };
-const cardForm = "_cardForm_1yhnk_1";
+const cardForm = "_cardForm_z5bsb_1";
 const styles$2 = {
   cardForm
 };
@@ -14682,11 +14735,13 @@ const CardCompanySelectSection = ({
   cardCompany,
   setCardCompany,
   handleMouseDown,
-  onChange
+  onChange,
+  goNextStep
 }) => {
   const changeCardCompany = (e) => {
     setCardCompany(e.target.value);
     onChange(e);
+    goNextStep({ time: "once", key: "cardCompany" });
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
     InputSection,
@@ -14728,62 +14783,6 @@ const ConfirmButton = ({
     }
   );
 };
-const useFieldCompletion = ({
-  cardNumbersForm,
-  cardCompanyForm,
-  cardExpirationDateForm,
-  cardCVCNumberForm
-}) => {
-  const [isFieldCompletetion, setIsFieldCompletetion] = reactExports.useState([
-    false,
-    false,
-    false,
-    false
-  ]);
-  reactExports.useEffect(() => {
-    if (Object.values(cardNumbersForm.cardNumbers).every(
-      (value) => value.length === 4
-    )) {
-      setIsFieldCompletetion((prev) => {
-        const newArray = [...prev];
-        newArray[0] = true;
-        return newArray;
-      });
-    }
-    if (cardCompanyForm.cardCompany !== "") {
-      setIsFieldCompletetion((prev) => {
-        const newArray = [...prev];
-        newArray[1] = true;
-        return newArray;
-      });
-    }
-    if (Object.values(cardExpirationDateForm.cardExpirationDate).every(
-      (value) => value.length === 2
-    )) {
-      setIsFieldCompletetion((prev) => {
-        const newArray = [...prev];
-        newArray[2] = true;
-        return newArray;
-      });
-    }
-    if (Object.values(cardCVCNumberForm.cardCVCNumber).length === 3) {
-      setIsFieldCompletetion((prev) => {
-        const newArray = [...prev];
-        newArray[3] = true;
-        return newArray;
-      });
-    }
-  }, [
-    cardCVCNumberForm.cardCVCNumber,
-    cardCompanyForm.cardCompany,
-    cardExpirationDateForm.cardExpirationDate,
-    cardNumbersForm.cardNumbers
-  ]);
-  const resetFieldCompletetion = () => {
-    setIsFieldCompletetion([false, false, false, false]);
-  };
-  return { isFieldCompletetion, resetFieldCompletetion };
-};
 const CARD_PASSWORD_TEXT = {
   title: "카드 비밀번호를 입력해 주세요",
   description: "앞의 2자리를 입력해주세요",
@@ -14796,8 +14795,19 @@ const CardPasswordInputSection = ({
   isError,
   errorMessage,
   inputRef,
-  handleMouseDown
+  handleMouseDown,
+  goNextStep
 }) => {
+  const { focusFirst } = useRefFocus([inputRef]);
+  reactExports.useEffect(() => {
+    focusFirst();
+  }, []);
+  const handleCardPasswordInputChange = (e) => {
+    setCardPassword(e);
+    if (e.target.value.length === 2) {
+      goNextStep({ time: "once", key: "cardPassword" });
+    }
+  };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       InputSection,
@@ -14811,7 +14821,7 @@ const CardPasswordInputSection = ({
             type: "password",
             value: cardPassword,
             name: "cardPassword",
-            onChange: setCardPassword,
+            onChange: handleCardPasswordInputChange,
             isError: isError.password,
             placeholder: "12",
             onBlur: handleCardPasswordBlur,
@@ -14823,211 +14833,6 @@ const CardPasswordInputSection = ({
     ),
     /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorMessage, { message: errorMessage })
   ] });
-};
-const useCardFormFlow = ({
-  isFieldCompletetion,
-  cardNumbersForm,
-  cardExpirationDateForm,
-  cardCVCNumberForm,
-  isUserFocusing
-}) => {
-  const cardNumbersInputRef = {
-    firstNumber: reactExports.useRef(null),
-    secondNumber: reactExports.useRef(null),
-    thirdNumber: reactExports.useRef(null),
-    fourthNumber: reactExports.useRef(null)
-  };
-  const cardExpirationDateInputRef = {
-    month: reactExports.useRef(null),
-    year: reactExports.useRef(null)
-  };
-  const cardCVCInputRef = reactExports.useRef(null);
-  const cardPasswordInputRef = reactExports.useRef(null);
-  reactExports.useEffect(() => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
-    if (isUserFocusing) return;
-    if (isFieldCompletetion[3]) {
-      (_a = cardPasswordInputRef.current) == null ? void 0 : _a.focus();
-      return;
-    }
-    if (isFieldCompletetion[2]) {
-      (_b = cardCVCInputRef.current) == null ? void 0 : _b.focus();
-      return;
-    }
-    if (isFieldCompletetion[1]) {
-      if (cardExpirationDateForm.cardExpirationDate.month.length < 2) {
-        (_c = cardExpirationDateInputRef.month.current) == null ? void 0 : _c.focus();
-      } else {
-        (_d = cardExpirationDateInputRef.year.current) == null ? void 0 : _d.focus();
-      }
-      return;
-    }
-    if (isFieldCompletetion[0]) {
-      (_e = cardNumbersInputRef.fourthNumber.current) == null ? void 0 : _e.blur();
-      return;
-    }
-    if (cardNumbersForm.cardNumbers.thirdNumber.length === 4) {
-      (_f = cardNumbersInputRef.fourthNumber.current) == null ? void 0 : _f.focus();
-      return;
-    }
-    if (cardNumbersForm.cardNumbers.secondNumber.length === 4) {
-      (_g = cardNumbersInputRef.thirdNumber.current) == null ? void 0 : _g.focus();
-      return;
-    }
-    if (cardNumbersForm.cardNumbers.firstNumber.length === 4) {
-      (_h = cardNumbersInputRef.secondNumber.current) == null ? void 0 : _h.focus();
-      return;
-    }
-    (_i = cardNumbersInputRef.firstNumber.current) == null ? void 0 : _i.focus();
-  }, [
-    isFieldCompletetion,
-    cardNumbersForm.cardNumbers,
-    cardExpirationDateForm.cardExpirationDate,
-    cardCVCNumberForm.cardCVCNumber,
-    isUserFocusing
-  ]);
-  return {
-    cardNumbersInputRef,
-    cardExpirationDateInputRef,
-    cardCVCInputRef,
-    cardPasswordInputRef
-  };
-};
-const CardFormPages = ({
-  cardNumbersForm,
-  cardCVCNumberForm,
-  cardCompanyForm,
-  cardExpirationDateForm,
-  cardPasswordForm,
-  canSubmit
-}) => {
-  const [isUserFocusing, setIsUserFocusing] = reactExports.useState(false);
-  const { isFieldCompletetion, resetFieldCompletetion } = useFieldCompletion({
-    cardNumbersForm,
-    cardCompanyForm,
-    cardExpirationDateForm,
-    cardCVCNumberForm
-  });
-  const nav = useNavigate();
-  const handleSubmit = () => {
-    setIsUserFocusing(false);
-    resetFieldCompletetion();
-    nav("/complete");
-  };
-  const {
-    cardNumbersInputRef,
-    cardExpirationDateInputRef,
-    cardCVCInputRef,
-    cardPasswordInputRef
-  } = useCardFormFlow({
-    isFieldCompletetion,
-    cardNumbersForm,
-    cardExpirationDateForm,
-    cardCVCNumberForm,
-    isUserFocusing
-  });
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      CardDisplay,
-      {
-        cardNumbers: cardNumbersForm.cardNumbers,
-        cardExpirationDate: cardExpirationDateForm.cardExpirationDate,
-        cardCompany: cardCompanyForm.cardCompany
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.cardForm, children: [
-      isFieldCompletetion[3] && /* @__PURE__ */ jsxRuntimeExports.jsx(
-        CardPasswordInputSection,
-        {
-          ...cardPasswordForm,
-          inputRef: cardPasswordInputRef,
-          handleMouseDown: () => setIsUserFocusing(true)
-        }
-      ),
-      isFieldCompletetion[2] && /* @__PURE__ */ jsxRuntimeExports.jsx(
-        CardCVCNumberInputSection,
-        {
-          ...cardCVCNumberForm,
-          inputRef: cardCVCInputRef,
-          handleMouseDown: () => setIsUserFocusing(true)
-        }
-      ),
-      isFieldCompletetion[1] && /* @__PURE__ */ jsxRuntimeExports.jsx(
-        CardExpirationDateInputSection,
-        {
-          ...cardExpirationDateForm,
-          inputRef: cardExpirationDateInputRef,
-          handleMouseDown: () => setIsUserFocusing(true)
-        }
-      ),
-      isFieldCompletetion[0] && /* @__PURE__ */ jsxRuntimeExports.jsx(
-        CardCompanySelectSection,
-        {
-          ...cardCompanyForm,
-          handleMouseDown: () => setIsUserFocusing(true),
-          onChange: () => setIsUserFocusing(false)
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        CardNumbersInputSection,
-        {
-          ...cardNumbersForm,
-          inputRef: cardNumbersInputRef,
-          handleMouseDown: () => setIsUserFocusing(true)
-        }
-      )
-    ] }),
-    canSubmit() && /* @__PURE__ */ jsxRuntimeExports.jsx(
-      ConfirmButton,
-      {
-        type: "submit",
-        text: "확인",
-        onClick: handleSubmit,
-        className: buttonStyle.cardConfirm
-      }
-    )
-  ] });
-};
-const CheckIcon = "data:image/png;base64,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";
-const container = "_container_13oiw_1";
-const text = "_text_13oiw_21";
-const checkIcon = "_checkIcon_13oiw_35";
-const styles$1 = {
-  container,
-  text,
-  checkIcon
-};
-const CardRegistrationComplete = ({
-  firstNumber,
-  resetForm
-}) => {
-  const nav = useNavigate();
-  const clickConfirmButton = () => {
-    resetForm();
-    nav("/");
-  };
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.container, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: CheckIcon, alt: "체크 아이콘", className: styles$1.checkIcon }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.text, children: [
-      firstNumber,
-      "로 시작하는",
-      /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-      " BC카드가 등록되었어요"
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: buttonStyle.buttonContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-      ConfirmButton,
-      {
-        type: "button",
-        text: "확인",
-        onClick: clickConfirmButton,
-        className: buttonStyle.finish
-      }
-    ) })
-  ] });
-};
-const main = "_main_wvi7l_1";
-const styles = {
-  main
 };
 const useError = (initiallError) => {
   const [isError, setIsError] = reactExports.useState(initiallError);
@@ -15046,10 +14851,6 @@ const useError = (initiallError) => {
   };
   return { error: error2, setErrorField, clearError };
 };
-const isNumber = (value) => {
-  if (value === null || value === void 0) return false;
-  return !isNaN(Number(value));
-};
 const isValidStringLength = ({
   value,
   minLength = 0,
@@ -15065,7 +14866,7 @@ const COMMON_ERROR_MESSAGE = {
   ONLY_NUMBER_WITH_LENGTH_MIN_MAX: (min, max) => `${min}자리 ~ ${max}자리 숫자만 입력 가능합니다`,
   ONLY_NUMBER_WITH_RANGE: (min, max) => `${min} ~ ${max} 사이의 숫자만 입력 가능합니다`
 };
-const isInteger = (value) => /^[0-9]+$/.test(value);
+const isInteger = (value) => /^[0-9]*$/.test(value);
 const INITIAL_IS_ERROR$3 = {
   cvcNumber: false
 };
@@ -15074,7 +14875,7 @@ const useCardCVCNumber = () => {
   const [cardCVCNumber, setCardCVCNumber] = reactExports.useState("");
   const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR$3);
   const getCardCVCNumberChangeValidationResult = (input2) => {
-    if (!isNumber(input2) || !isInteger(input2)) {
+    if (!isInteger(input2)) {
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
     if (!isValidStringLength({ value: input2, maxLength: MAX_CVC_LENGTH })) {
@@ -15143,11 +14944,11 @@ const useCardExpirationDate = () => {
   );
   const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR$2);
   const getCardExpirationDateValidationResult = (target, input2) => {
-    if (input2.length === 1 && !isNumber(input2))
+    if (input2.length === 1 && !isInteger(input2))
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     if (input2.length < MAX_INPUT_LENGTH$1)
       return { isError: false, errorMessage: "" };
-    if (!isNumber(input2) || !isInteger(input2)) {
+    if (!isInteger(input2)) {
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
     if (!isValidStringLength({ value: input2, maxLength: MAX_INPUT_LENGTH$1 })) {
@@ -15248,7 +15049,7 @@ const useCardNumbers = () => {
   const [cardNumbers, setCardNumbers] = reactExports.useState(INITIAL_CARD_NUMBER);
   const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR$1);
   const getCardNumbersValidationResult = (input2) => {
-    if (!isNumber(input2) || !isInteger(input2)) {
+    if (!isInteger(input2)) {
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
     if (!isValidStringLength({ value: input2, maxLength: MAX_INPUT_LENGTH })) {
@@ -15296,7 +15097,7 @@ const useCardPassword = () => {
   const [cardPassword, setCardPassword] = reactExports.useState("");
   const { error: error2, setErrorField, clearError } = useError(INITIAL_IS_ERROR);
   const getCardPasswordChangeValidationResult = (input2) => {
-    if (!isNumber(input2) || !isInteger(input2)) {
+    if (!isInteger(input2)) {
       return { isError: true, errorMessage: COMMON_ERROR_MESSAGE.ONLY_NUMBER };
     }
     if (!isValidStringLength({ value: input2, maxLength: MAX_PASSWORD_LENGTH })) {
@@ -15356,7 +15157,8 @@ const useCardForm = () => {
     const canCardCVCNumberSubmit = canSubmitByLength(cardCVCNumberForm.cardCVCNumber, 3) && isErrorFree(cardCVCNumberForm.isError);
     const canCardExpirationDateSubmit = canSubmitByLength(cardExpirationDateForm.cardExpirationDate, 2) && isErrorFree(cardExpirationDateForm.isError);
     const canCardPasswordSubmit = canSubmitByLength(cardPasswordForm.cardPassword, 2) && isErrorFree(cardPasswordForm.isError);
-    return canCardNumbersSubmit && canCardCVCNumberSubmit && canCardExpirationDateSubmit && canCardPasswordSubmit;
+    const canCardCompanySubmit = cardCompanyForm.cardCompany !== "";
+    return canCardNumbersSubmit && canCardCompanySubmit && canCardCVCNumberSubmit && canCardExpirationDateSubmit && canCardPasswordSubmit;
   };
   const resetForm = () => {
     cardNumbersForm.resetCardNumbers();
@@ -15385,45 +15187,186 @@ const canSubmitByLength = (value, expectedLength) => {
 const isErrorFree = (errors) => {
   return Object.values(errors).every((isError) => !isError);
 };
-function App() {
+const ROUTES = {
+  HOME: "/",
+  COMPLETE: "/complete"
+};
+const useStep = () => {
+  const [currentStep, setCurrentStep] = reactExports.useState(0);
+  const keysRef = reactExports.useRef(/* @__PURE__ */ new Set());
+  const goNextStep = ({ time, key }) => {
+    if (time === "once" && keysRef.current.has(key)) {
+      return;
+    }
+    if (!keysRef.current.has(key)) {
+      keysRef.current.add(key);
+    }
+    setCurrentStep((prevStep) => prevStep + 1);
+  };
+  return {
+    currentStep,
+    goNextStep
+  };
+};
+const StepStack = ({ children, currentStep }) => {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: children.slice(0, currentStep + 1) });
+};
+const CardFormPages = () => {
+  const nav = useNavigate();
   const {
     cardNumbersForm,
     cardCVCNumberForm,
     cardCompanyForm,
     cardExpirationDateForm,
     cardPasswordForm,
-    canSubmit,
-    resetForm
+    canSubmit
   } = useCardForm();
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(BrowserRouter, { basename: "/react-payments", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.main, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Routes, { children: [
+  const [isUserFocusing, setIsUserFocusing] = reactExports.useState(false);
+  const { currentStep, goNextStep } = useStep();
+  const firstNumber = reactExports.useRef(null);
+  const secondNumber = reactExports.useRef(null);
+  const thirdNumber = reactExports.useRef(null);
+  const fourthNumber = reactExports.useRef(null);
+  const cardNumbersInputRef = reactExports.useMemo(
+    () => ({
+      firstNumber,
+      secondNumber,
+      thirdNumber,
+      fourthNumber
+    }),
+    []
+  );
+  const month = reactExports.useRef(null);
+  const year = reactExports.useRef(null);
+  const cardExpirationDateInputRef = reactExports.useMemo(
+    () => ({
+      month,
+      year
+    }),
+    []
+  );
+  const cardCVCInputRef = reactExports.useRef(null);
+  const cardPasswordInputRef = reactExports.useRef(null);
+  const handleSubmit = () => {
+    setIsUserFocusing(false);
+    nav(ROUTES.COMPLETE, {
+      state: { cardFirstNumber: cardNumbersForm.cardNumbers.firstNumber }
+    });
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Route,
+      CardDisplay,
       {
-        path: "/",
-        element: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          CardFormPages,
-          {
-            cardNumbersForm,
-            cardCVCNumberForm,
-            cardCompanyForm,
-            cardExpirationDateForm,
-            cardPasswordForm,
-            canSubmit
-          }
-        )
+        cardNumbers: cardNumbersForm.cardNumbers,
+        cardExpirationDate: cardExpirationDateForm.cardExpirationDate,
+        cardCompany: cardCompanyForm.cardCompany
       }
     ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.cardForm, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(StepStack, { currentStep, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        CardNumbersInputSection,
+        {
+          ...cardNumbersForm,
+          inputRef: cardNumbersInputRef,
+          handleMouseDown: () => setIsUserFocusing(true),
+          goNextStep
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        CardCompanySelectSection,
+        {
+          ...cardCompanyForm,
+          handleMouseDown: () => setIsUserFocusing(true),
+          onChange: () => setIsUserFocusing(false),
+          goNextStep
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        CardExpirationDateInputSection,
+        {
+          ...cardExpirationDateForm,
+          inputRef: cardExpirationDateInputRef,
+          handleMouseDown: () => setIsUserFocusing(true),
+          goNextStep
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        CardCVCNumberInputSection,
+        {
+          ...cardCVCNumberForm,
+          inputRef: cardCVCInputRef,
+          handleMouseDown: () => setIsUserFocusing(true),
+          goNextStep
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        CardPasswordInputSection,
+        {
+          ...cardPasswordForm,
+          inputRef: cardPasswordInputRef,
+          handleMouseDown: () => setIsUserFocusing(true),
+          goNextStep
+        }
+      )
+    ] }) }),
+    canSubmit() && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      ConfirmButton,
+      {
+        type: "submit",
+        text: "확인",
+        onClick: handleSubmit,
+        className: buttonStyle.cardConfirm
+      }
+    )
+  ] });
+};
+const CheckIcon = "data:image/png;base64,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";
+const container = "_container_13oiw_1";
+const text = "_text_13oiw_21";
+const checkIcon = "_checkIcon_13oiw_35";
+const styles$1 = {
+  container,
+  text,
+  checkIcon
+};
+const CardRegistrationComplete = () => {
+  const nav = useNavigate();
+  const location = useLocation();
+  const { cardFirstNumber } = location.state;
+  const handleClickConfirmButton = () => {
+    nav(ROUTES.HOME);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.container, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: CheckIcon, alt: "체크 아이콘", className: styles$1.checkIcon }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.text, children: [
+      cardFirstNumber,
+      "로 시작하는",
+      /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+      " BC카드가 등록되었어요"
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: buttonStyle.buttonContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      ConfirmButton,
+      {
+        type: "button",
+        text: "확인",
+        onClick: handleClickConfirmButton,
+        className: buttonStyle.finish
+      }
+    ) })
+  ] });
+};
+const main = "_main_wvi7l_1";
+const styles = {
+  main
+};
+function App() {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(BrowserRouter, { basename: "/react-payments", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.main, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Routes, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Route, { path: ROUTES.HOME, element: /* @__PURE__ */ jsxRuntimeExports.jsx(CardFormPages, {}) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       Route,
       {
-        path: "/complete",
-        element: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          CardRegistrationComplete,
-          {
-            firstNumber: cardNumbersForm.cardNumbers.firstNumber,
-            resetForm
-          }
-        )
+        path: ROUTES.COMPLETE,
+        element: /* @__PURE__ */ jsxRuntimeExports.jsx(CardRegistrationComplete, {})
       }
     )
   ] }) }) }) });
